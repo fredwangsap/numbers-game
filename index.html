@@ -179,7 +179,7 @@ h1 {
 .p-cell.blank.drop-hover { border-color: #1565c0; background: #90caf9; transform: scale(1.08); }
 .p-cell.blank.correct { background: #c8e6c9; border-color: #43a047; color: #2e7d32; }
 .p-cell.blank.wrong { background: #ffcdd2; border-color: #e53935; color: #c62828; animation: shake 0.4s; }
-.p-cell.operator { color: #c62828; font-size: 1.4rem; width: 36px; border: none; }
+.p-cell.operator { color: #c62828; font-size: 1.4rem; width: 52px; border: none; }
 .p-cell.spacer { width: 52px; border: none; background: none; }
 
 .puzzle-palette { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); margin-bottom: 16px; }
@@ -270,7 +270,7 @@ h1 {
   .grid-cell { width: 44px; height: 44px; font-size: 1.2rem; }
   .workspace { grid-template-columns: repeat(var(--cols,8),44px); grid-template-rows: repeat(var(--rows,8),44px); }
   .p-cell { width: 44px; height: 44px; font-size: 1.3rem; }
-  .p-cell.operator { width: 30px; }
+  .p-cell.operator { width: 44px; }
 }
 </style>
 </head>
@@ -387,21 +387,21 @@ const I18N = {
     howtoTitle: '📖 How to Play the Numbers Puzzle',
     howto1: 'Look at the <b>multiplication problem</b> on the card. Some digits are filled in, and some are missing (shown as blue dashed boxes).',
     howto2: '<b>Drag a number</b> (0-9) from the green tiles and <b>drop it</b> into a blue box. Think about which number fits!',
-    howto3: 'Use what you know about multiplication! For example, if you see <b>_4_ \u00d7 _6</b>, think: what times 6 ends in the digit shown in the answer?',
-    howto4: '<b>Tap a filled box</b> to clear it if you change your mind. Use the 💡 <b>Hint</b> button if you\'re stuck \u2014 it reveals one digit!',
+    howto3: 'Use what you know about multiplication! For example, if you see <b>_4_ × _6</b>, think: what times 6 ends in the digit shown in the answer?',
+    howto4: '<b>Tap a filled box</b> to clear it if you change your mind. Use the 💡 <b>Hint</b> button if you\'re stuck — it reveals one digit!',
     howto5: 'When all boxes are filled, press ✅ <b>Check</b>. Green = correct, red = try again. Get them all right for a celebration! 🎉',
-    howto6: 'In <b>🏗️ Free Build</b> mode, you can create your OWN puzzles! Drag numbers, operators (+, -, \u00d7), boxes, and lines onto the grid to design worksheets for friends.',
+    howto6: 'In <b>🏗️ Free Build</b> mode, you can create your OWN puzzles! Drag numbers, operators (+, -, ×), boxes, and lines onto the grid to design worksheets for friends.',
     tipsTitle: '🧠 Tips for Solving',
     tip1: '<b>Start from what you know.</b> Look at the given digits in the answer and partial products first.',
-    tip2: '<b>Work backwards.</b> If the ones digit of the answer is 2, and the multiplier is 6, ask yourself: what \u00d7 6 ends in 2? (answer: 2 or 7)',
+    tip2: '<b>Work backwards.</b> If the ones digit of the answer is 2, and the multiplier is 6, ask yourself: what × 6 ends in 2? (answer: 2 or 7)',
     tip3: '<b>Check partial products.</b> Multiply the top number by each digit of the bottom number separately, then add them.',
-    tip4: '<b>Use carrying.</b> Remember that multiplication can produce carries! 7 \u00d7 6 = 42, so you write 2 and carry 4.',
+    tip4: '<b>Use carrying.</b> Remember that multiplication can produce carries! 7 × 6 = 42, so you write 2 and carry 4.',
     stepsTitle: '📝 Step-by-Step Breakdown',
-    stepMultiply: "We're multiplying <b>{a}</b> \u00d7 <b>{b}</b>.",
-    stepPartial: 'Multiply {a} \u00d7 {d} (the <b>{place}</b> digit) = <b>{result}</b>{shift}.',
+    stepMultiply: "We're multiplying <b>{a}</b> × <b>{b}</b>.",
+    stepPartial: 'Multiply {a} × {d} (the <b>{place}</b> digit) = <b>{result}</b>{shift}.',
     stepShift: ', then shift {n} place{s} left',
     stepAdd: 'Add the partial products together to get <b>{product}</b>.',
-    stepSimple: '{a} \u00d7 {b} = <b>{product}</b>.',
+    stepSimple: '{a} × {b} = <b>{product}</b>.',
     stepFill: 'Fill in all the blue boxes with the correct missing digits!',
     ones: 'ones', tens: 'tens', hundreds: 'hundreds',
   },
@@ -431,21 +431,21 @@ const I18N = {
     howtoTitle: '📖 数字拼图玩法说明',
     howto1: '看看卡片上的<b>乘法算式</b>。有些数字已经填好了，有些是空的（显示为蓝色虚线方框）。',
     howto2: '从绿色数字块中<b>拖动一个数字</b>（0-9），<b>放到</b>蓝色方框里。想想哪个数字合适！',
-    howto3: '运用你的乘法知识！例如，如果你看到 <b>_4_ \u00d7 _6</b>，想一想：什么数乘以6，个位是答案中显示的数字？',
+    howto3: '运用你的乘法知识！例如，如果你看到 <b>_4_ × _6</b>，想一想：什么数乘以6，个位是答案中显示的数字？',
     howto4: '<b>点击已填的方框</b>可以清除重填。如果卡住了，用 💡 <b>提示</b> 按钮——它会揭示一个数字！',
     howto5: '填满所有方框后，按 ✅ <b>检查</b>。绿色 = 正确，红色 = 再试试。全部答对会有庆祝动画！🎉',
-    howto6: '在 <b>🏗️ 自由搭建</b> 模式中，你可以创建自己的题目！把数字、运算符（+、-、\u00d7）、方框和横线拖到网格上，给朋友设计练习题。',
+    howto6: '在 <b>🏗️ 自由搭建</b> 模式中，你可以创建自己的题目！把数字、运算符（+、-、×）、方框和横线拖到网格上，给朋友设计练习题。',
     tipsTitle: '🧠 解题技巧',
     tip1: '<b>从已知数字开始。</b>先看看答案和部分积中已经给出的数字。',
-    tip2: '<b>逆向推理。</b>如果答案的个位是2，乘数是6，问自己：什么 \u00d7 6 的个位是2？（答案：2 或 7）',
+    tip2: '<b>逆向推理。</b>如果答案的个位是2，乘数是6，问自己：什么 × 6 的个位是2？（答案：2 或 7）',
     tip3: '<b>检查部分积。</b>把上面的数分别乘以下面数字的每一位，然后把结果相加。',
-    tip4: '<b>注意进位。</b>记住乘法会产生进位！7 \u00d7 6 = 42，所以劙2进4。',
+    tip4: '<b>注意进位。</b>记住乘法会产生进位！7 × 6 = 42，所以写2进4。',
     stepsTitle: '📝 分步解析',
-    stepMultiply: '我们要计算 <b>{a}</b> \u00d7 <b>{b}</b>。',
-    stepPartial: '用 {a} \u00d7 {d}（<b>{place}</b>）= <b>{result}</b>{shift}。',
+    stepMultiply: '我们要计算 <b>{a}</b> × <b>{b}</b>。',
+    stepPartial: '用 {a} × {d}（<b>{place}</b>）= <b>{result}</b>{shift}。',
     stepShift: '，然后左移{n}位',
     stepAdd: '把所有部分积加起来得到 <b>{product}</b>。',
-    stepSimple: '{a} \u00d7 {b} = <b>{product}</b>。',
+    stepSimple: '{a} × {b} = <b>{product}</b>。',
     stepFill: '在所有蓝色方框中填入正确的缺失数字！',
     ones: '个位', tens: '十位', hundreds: '百位',
   }
@@ -544,24 +544,22 @@ function generateProblem(diff) {
 
 function digitCells(num, maxW) {
   const s = String(num), cells = [];
+  cells.push({ kind: 'space' });
   for (let i = 0; i < maxW - s.length; i++) cells.push({ kind: 'space' });
   for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
   return cells;
 }
 function multiplierCells(num, maxW) {
-  const s = String(num), cells = [{ kind: 'operator', value: '\u00d7' }];
-  for (let i = 0; i < maxW - s.length - 1; i++) cells.push({ kind: 'space' });
+  const s = String(num), cells = [];
+  cells.push({ kind: 'operator', value: '\u00d7' });
+  for (let i = 0; i < maxW - s.length; i++) cells.push({ kind: 'space' });
   for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
   return cells;
 }
 function partialCells(num, maxW, shift, prefix) {
   const s = String(num), cells = [];
-  if (prefix) {
-    cells.push({ kind: 'operator', value: prefix });
-    for (let i = 0; i < maxW - s.length - shift - 1; i++) cells.push({ kind: 'space' });
-  } else {
-    for (let i = 0; i < maxW - s.length - shift; i++) cells.push({ kind: 'space' });
-  }
+  cells.push(prefix ? { kind: 'operator', value: prefix } : { kind: 'space' });
+  for (let i = 0; i < maxW - s.length - shift; i++) cells.push({ kind: 'space' });
   for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
   for (let i = 0; i < shift; i++) cells.push({ kind: 'space' });
   return cells;
@@ -775,8 +773,8 @@ function initBuildPalette() {
   const dp = document.getElementById('digit-palette'), op = document.getElementById('op-palette'), sp = document.getElementById('special-palette');
   dp.innerHTML = ''; op.innerHTML = ''; sp.innerHTML = '';
   for (let i = 0; i <= 9; i++) dp.appendChild(makePiece(String(i), 'digit'));
-  ['+','\u2212','\u00d7','\u00f7','='].forEach(v => op.appendChild(makePiece(v, 'operator')));
-  [{ l: '\u25a1', k: 'box' }, { l: '\u2022', k: 'dot' }, { l: '\u2501', k: 'line' }].forEach(s => {
+  ['+','−','×','÷','='].forEach(v => op.appendChild(makePiece(v, 'operator')));
+  [{ l: '□', k: 'box' }, { l: '•', k: 'dot' }, { l: '━', k: 'line' }].forEach(s => {
     const p = makePiece(s.l, s.k);
     if (s.k === 'box') p.classList.add('box-piece');
     sp.appendChild(p);
@@ -809,13 +807,13 @@ function clearWorkspace() {
 function loadExample() {
   clearWorkspace();
   const layout = [
-    [null,null,null,{v:'\u25a1',k:'box'},{v:'\u2022',k:'dot'},{v:'4',k:'digit'},{v:'\u25a1',k:'box'},null],
-    [null,null,null,{v:'\u00d7',k:'operator'},null,{v:'\u25a1',k:'box'},{v:'6',k:'digit'},null],
-    [null,null,null,{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},null],
-    [null,null,null,null,{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},null],
-    [null,null,{v:'+',k:'operator'},null,{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'5',k:'digit'},null],
-    [null,null,{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},null],
-    [null,null,{v:'8',k:'digit'},{v:'\u2022',k:'dot'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},null],
+    [null,null,null,{v:'□',k:'box'},{v:'•',k:'dot'},{v:'4',k:'digit'},{v:'□',k:'box'},null],
+    [null,null,null,{v:'×',k:'operator'},null,{v:'□',k:'box'},{v:'6',k:'digit'},null],
+    [null,null,null,{v:'━',k:'line'},{v:'━',k:'line'},{v:'━',k:'line'},{v:'━',k:'line'},null],
+    [null,null,null,null,{v:'□',k:'box'},{v:'□',k:'box'},{v:'□',k:'box'},null],
+    [null,null,{v:'+',k:'operator'},null,{v:'□',k:'box'},{v:'□',k:'box'},{v:'5',k:'digit'},null],
+    [null,null,{v:'━',k:'line'},{v:'━',k:'line'},{v:'━',k:'line'},{v:'━',k:'line'},{v:'━',k:'line'},null],
+    [null,null,{v:'8',k:'digit'},{v:'•',k:'dot'},{v:'□',k:'box'},{v:'□',k:'box'},{v:'□',k:'box'},null],
     [null,null,null,null,null,null,null,null],
   ];
   const cells = document.querySelectorAll('#workspace .grid-cell');
