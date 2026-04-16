@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🧮 Numbers Puzzle / 数字拼图</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Fredoka:wght@400;600&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Fredoka', 'Noto Sans SC', 'Comic Sans MS', cursive, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+}
+h1 {
+  text-align: center;
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 4px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+.subtitle {
+  text-align: center;
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  margin-bottom: 8px;
+  font-family: 'Patrick Hand', 'Noto Sans SC', cursive;
+}
+
+.lang-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.lang-btn {
+  padding: 6px 18px;
+  border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lang-btn:first-child { border-radius: 20px 0 0 20px; border-right: none; }
+.lang-btn:last-child { border-radius: 0 20px 20px 0; }
+.lang-btn.active {
+  background: #fff;
+  color: #764ba2;
+  border-color: #fff;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 24px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+.tab-btn.active {
+  background: #fff;
+  color: #764ba2;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.tab-btn:hover { transform: translateY(-2px); }
+
+.mode-panel { display: none; }
+.mode-panel.active { display: block; }
+
+.build-area { max-width: 700px; margin: 0 auto; }
+.palette {
+  background: rgba(255,255,255,0.95);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.palette-label { font-size: 0.85rem; color: #888; margin-bottom: 8px; font-weight: 600; }
+.palette-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.palette-row:last-child { margin-bottom: 0; }
+
+.piece {
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 600;
+  border-radius: 12px; cursor: grab;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative; touch-action: none;
+}
+.piece:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.piece:active { cursor: grabbing; }
+.piece.digit { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a5c34; border: 2px solid rgba(0,0,0,0.08); }
+.piece.operator { background: linear-gradient(135deg, #fa709a, #fee140); color: #8b2252; border: 2px solid rgba(0,0,0,0.08); }
+.piece.special { background: linear-gradient(135deg, #a18cd1, #fbc2eb); color: #5b3a8c; border: 2px solid rgba(0,0,0,0.08); }
+.piece.special.box-piece { font-size: 1.1rem; }
+
+.workspace-wrapper {
+  background: #fffef5;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  position: relative;
+  background-image: repeating-linear-gradient(transparent, transparent 59px, #c8e6c9 59px, #c8e6c9 60px);
+  background-size: 100% 60px;
+  background-position: 0 19px;
+}
+.workspace-controls {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+}
+.ws-btn {
+  padding: 6px 16px; border: none; border-radius: 12px;
+  font-family: inherit; font-size: 0.85rem; cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.ws-btn:hover { transform: translateY(-1px); }
+.btn-clear { background: #ffcdd2; color: #c62828; }
+.btn-example { background: #bbdefb; color: #1565c0; }
+
+.workspace {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 8), 56px);
+  grid-template-rows: repeat(var(--rows, 8), 56px);
+  gap: 4px; justify-content: center; min-height: 200px;
+}
+.grid-cell {
+  width: 56px; height: 56px;
+  border: 2px dashed rgba(0,0,0,0.08); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 600;
+  transition: all 0.15s; position: relative;
+}
+.grid-cell.drop-hover { border-color: #667eea; background: rgba(102,126,234,0.1); transform: scale(1.05); }
+.grid-cell.filled { border: 2px solid rgba(0,0,0,0.15); background: #fff; }
+.grid-cell.filled.is-digit { color: #1a237e; background: #e8f5e9; }
+.grid-cell.filled.is-operator { color: #c62828; background: #fce4ec; }
+.grid-cell.filled.is-box { border: 3px solid #1565c0; background: #e3f2fd; color: #1565c0; }
+.grid-cell.filled.is-dot { color: #333; font-size: 2rem; }
+.grid-cell.filled.is-line { border: none; background: none; position: relative; }
+.grid-cell.filled.is-line::after {
+  content: ''; position: absolute; left: 2px; right: 2px; top: 50%;
+  height: 3px; background: #1a237e; border-radius: 2px;
+}
+
+.puzzle-area { max-width: 600px; margin: 0 auto; }
+.puzzle-card {
+  background: #fffef5; border-radius: 20px; padding: 24px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15); margin-bottom: 16px;
+  background-image: repeating-linear-gradient(transparent, transparent 59px, #c8e6c9 59px, #c8e6c9 60px);
+  background-size: 100% 60px; background-position: 0 19px;
+}
+.puzzle-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 10px; min-height: 54px; align-items: center; }
+.puzzle-row.line-row { margin: 4px auto; min-height: 6px; }
+.puzzle-line { height: 3px; background: #1a237e; border-radius: 2px; flex: 1; max-width: 360px; }
+
+.p-cell {
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; font-weight: 600; border-radius: 10px; transition: all 0.2s;
+}
+.p-cell.given { background: #fff; border: 2px solid #c5cae9; color: #1a237e; }
+.p-cell.blank { background: #e3f2fd; border: 3px dashed #42a5f5; color: transparent; cursor: pointer; position: relative; }
+.p-cell.blank.filled-in { color: #1565c0; background: #bbdefb; border-style: solid; font-weight: 700; }
+.p-cell.blank.drop-hover { border-color: #1565c0; background: #90caf9; transform: scale(1.08); }
+.p-cell.blank.correct { background: #c8e6c9; border-color: #43a047; color: #2e7d32; }
+.p-cell.blank.wrong { background: #ffcdd2; border-color: #e53935; color: #c62828; animation: shake 0.4s; }
+.p-cell.operator { color: #c62828; font-size: 1.4rem; width: 36px; border: none; }
+.p-cell.spacer { width: 52px; border: none; background: none; }
+
+.puzzle-palette { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); margin-bottom: 16px; }
+.puzzle-tiles { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.p-tile {
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 600; border-radius: 12px; cursor: grab;
+  background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a5c34;
+  border: 2px solid rgba(0,0,0,0.08); transition: transform 0.15s, box-shadow 0.15s; touch-action: none;
+}
+.p-tile:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+.puzzle-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+.p-ctrl-btn {
+  padding: 10px 24px; border: none; border-radius: 16px;
+  font-family: inherit; font-size: 1rem; cursor: pointer; font-weight: 600;
+  transition: all 0.2s; color: #fff;
+}
+.p-ctrl-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn-new { background: linear-gradient(135deg, #667eea, #764ba2); }
+.btn-hint { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.btn-verify { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a5c34; }
+
+.difficulty-selector { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+.diff-btn {
+  padding: 6px 18px; border: 2px solid rgba(255,255,255,0.4); border-radius: 20px;
+  background: transparent; color: #fff; font-family: inherit; font-size: 0.9rem;
+  cursor: pointer; font-weight: 600; transition: all 0.2s;
+}
+.diff-btn.active { background: #fff; color: #764ba2; border-color: #fff; }
+
+.steps-panel {
+  background: rgba(255,255,255,0.95); border-radius: 20px; padding: 20px;
+  margin-bottom: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.steps-panel h3 { color: #764ba2; margin-bottom: 12px; font-size: 1.1rem; }
+.step-item {
+  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;
+  padding: 8px 12px; border-radius: 12px; background: #f3e5f5; transition: all 0.3s;
+}
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; background: #764ba2; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+}
+.step-text { font-family: 'Patrick Hand', 'Noto Sans SC', cursive; font-size: 1.05rem; line-height: 1.4; color: #4a148c; }
+
+.celebration {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.5); justify-content: center; align-items: center;
+}
+.celebration.show { display: flex; }
+.celeb-card {
+  background: #fff; border-radius: 24px; padding: 40px; text-align: center;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.celeb-emoji { font-size: 4rem; margin-bottom: 12px; }
+.celeb-text { font-size: 1.8rem; color: #764ba2; font-weight: 700; }
+.celeb-sub { font-size: 1rem; color: #888; margin-top: 8px; }
+.celeb-btn {
+  margin-top: 20px; padding: 12px 32px; border: none; border-radius: 16px;
+  font-family: inherit; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+}
+
+.confetti-piece {
+  position: fixed; width: 10px; height: 10px; border-radius: 2px;
+  z-index: 1001; pointer-events: none; animation: confettiFall 3s ease-in forwards;
+}
+.drag-ghost {
+  position: fixed; pointer-events: none; z-index: 999; opacity: 0.9; transform: scale(1.15);
+  font-size: 1.5rem; font-weight: 600; width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; border: 2px solid rgba(0,0,0,0.1);
+}
+
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+@keyframes popIn { from{transform:scale(.3);opacity:0} to{transform:scale(1);opacity:1} }
+@keyframes confettiFall { 0%{transform:translateY(-10vh) rotate(0);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+@keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.pop-anim { animation: pop 0.25s ease; }
+
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  .piece,.p-tile { width: 44px; height: 44px; font-size: 1.2rem; }
+  .grid-cell { width: 44px; height: 44px; font-size: 1.2rem; }
+  .workspace { grid-template-columns: repeat(var(--cols,8),44px); grid-template-rows: repeat(var(--rows,8),44px); }
+  .p-cell { width: 44px; height: 44px; font-size: 1.3rem; }
+  .p-cell.operator { width: 30px; }
+}
+</style>
+</head>
+<body>
+
+<h1 data-i18n="title">🧮 Numbers Puzzle</h1>
+<p class="subtitle" data-i18n="subtitle">Drag & drop to build and solve math puzzles!</p>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" data-lang="en">🇬🇧 EN</button>
+  <button class="lang-btn" data-lang="zh">🇨🇳 中文</button>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="puzzle" data-i18n="tabPuzzle">🧩 Puzzle Challenge</button>
+  <button class="tab-btn" data-tab="build" data-i18n="tabBuild">🏗️ Free Build</button>
+  <button class="tab-btn" data-tab="howto" data-i18n="tabHowto">📖 How to Play</button>
+</div>
+
+<div id="panel-puzzle" class="mode-panel active">
+  <div class="puzzle-area">
+    <div class="difficulty-selector">
+      <button class="diff-btn active" data-diff="easy" data-i18n="easy">⭐ Easy</button>
+      <button class="diff-btn" data-diff="medium" data-i18n="medium">⭐⭐ Medium</button>
+      <button class="diff-btn" data-diff="hard" data-i18n="hard">⭐⭐⭐ Hard</button>
+    </div>
+    <div class="puzzle-card" id="puzzle-grid"></div>
+    <div class="puzzle-palette"><div class="puzzle-tiles" id="puzzle-tiles"></div></div>
+    <div class="puzzle-controls">
+      <button class="p-ctrl-btn btn-verify" onclick="verifyPuzzle()" data-i18n="check">✅ Check</button>
+      <button class="p-ctrl-btn btn-hint" onclick="giveHint()" data-i18n="hint">💡 Hint</button>
+      <button class="p-ctrl-btn btn-new" onclick="newPuzzle()" data-i18n="newPuzzle">🎲 New Puzzle</button>
+    </div>
+    <div class="steps-panel" id="steps-panel"></div>
+  </div>
+</div>
+
+<div id="panel-build" class="mode-panel">
+  <div class="build-area">
+    <div class="palette">
+      <div class="palette-label" data-i18n="numbers">🔢 Numbers</div>
+      <div class="palette-row" id="digit-palette"></div>
+      <div class="palette-label" data-i18n="operators">➕ Operators</div>
+      <div class="palette-row" id="op-palette"></div>
+      <div class="palette-label" data-i18n="specialPieces">🧱 Special Pieces</div>
+      <div class="palette-row" id="special-palette"></div>
+    </div>
+    <div class="workspace-wrapper">
+      <div class="workspace-controls">
+        <button class="ws-btn btn-example" onclick="loadExample()" data-i18n="loadExample">📋 Load Example</button>
+        <span style="font-size:0.85rem;color:#888" data-i18n="tapToClear">Tap a cell to clear it</span>
+        <button class="ws-btn btn-clear" onclick="clearWorkspace()" data-i18n="clearAll">🗑️ Clear All</button>
+      </div>
+      <div class="workspace" id="workspace"></div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-howto" class="mode-panel">
+  <div class="puzzle-area">
+    <div class="steps-panel">
+      <h3 data-i18n="howtoTitle">📖 How to Play the Numbers Puzzle</h3>
+      <div class="step-item"><div class="step-num">1</div><div class="step-text" data-i18n-html="howto1"></div></div>
+      <div class="step-item"><div class="step-num">2</div><div class="step-text" data-i18n-html="howto2"></div></div>
+      <div class="step-item"><div class="step-num">3</div><div class="step-text" data-i18n-html="howto3"></div></div>
+      <div class="step-item"><div class="step-num">4</div><div class="step-text" data-i18n-html="howto4"></div></div>
+      <div class="step-item"><div class="step-num">5</div><div class="step-text" data-i18n-html="howto5"></div></div>
+      <div class="step-item"><div class="step-num">6</div><div class="step-text" data-i18n-html="howto6"></div></div>
+    </div>
+    <div class="steps-panel">
+      <h3 data-i18n="tipsTitle">🧠 Tips for Solving</h3>
+      <div class="step-item"><div class="step-num">💡</div><div class="step-text" data-i18n-html="tip1"></div></div>
+      <div class="step-item"><div class="step-num">💡</div><div class="step-text" data-i18n-html="tip2"></div></div>
+      <div class="step-item"><div class="step-num">💡</div><div class="step-text" data-i18n-html="tip3"></div></div>
+      <div class="step-item"><div class="step-num">💡</div><div class="step-text" data-i18n-html="tip4"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="celebration" id="celebration">
+  <div class="celeb-card">
+    <div class="celeb-emoji">🎉🌟🏆</div>
+    <div class="celeb-text" data-i18n="celebTitle">Amazing Job!</div>
+    <div class="celeb-sub" data-i18n="celebSub">You solved the puzzle perfectly!</div>
+    <button class="celeb-btn" onclick="closeCelebration()" data-i18n="celebNext">🎲 Next Puzzle!</button>
+  </div>
+</div>
+
+<script>
+const I18N = {
+  en: {
+    title: '🧮 Numbers Puzzle',
+    subtitle: 'Drag & drop to build and solve math puzzles!',
+    tabPuzzle: '🧩 Puzzle Challenge',
+    tabBuild: '🏗️ Free Build',
+    tabHowto: '📖 How to Play',
+    easy: '⭐ Easy',
+    medium: '⭐⭐ Medium',
+    hard: '⭐⭐⭐ Hard',
+    check: '✅ Check',
+    hint: '💡 Hint',
+    newPuzzle: '🎲 New Puzzle',
+    numbers: '🔢 Numbers',
+    operators: '➕ Operators',
+    specialPieces: '🧱 Special Pieces',
+    loadExample: '📋 Load Example',
+    tapToClear: 'Tap a cell to clear it',
+    clearAll: '🗑️ Clear All',
+    celebTitle: 'Amazing Job!',
+    celebSub: 'You solved the puzzle perfectly!',
+    celebNext: '🎲 Next Puzzle!',
+    noMoreHints: 'No more hints! You can do it! 💪',
+    fillFirst: 'Fill in all the blue boxes first! 🔢',
+    howtoTitle: '📖 How to Play the Numbers Puzzle',
+    howto1: 'Look at the <b>multiplication problem</b> on the card. Some digits are filled in, and some are missing (shown as blue dashed boxes).',
+    howto2: '<b>Drag a number</b> (0-9) from the green tiles and <b>drop it</b> into a blue box. Think about which number fits!',
+    howto3: 'Use what you know about multiplication! For example, if you see <b>_4_ \u00d7 _6</b>, think: what times 6 ends in the digit shown in the answer?',
+    howto4: '<b>Tap a filled box</b> to clear it if you change your mind. Use the 💡 <b>Hint</b> button if you\'re stuck \u2014 it reveals one digit!',
+    howto5: 'When all boxes are filled, press ✅ <b>Check</b>. Green = correct, red = try again. Get them all right for a celebration! 🎉',
+    howto6: 'In <b>🏗️ Free Build</b> mode, you can create your OWN puzzles! Drag numbers, operators (+, -, \u00d7), boxes, and lines onto the grid to design worksheets for friends.',
+    tipsTitle: '🧠 Tips for Solving',
+    tip1: '<b>Start from what you know.</b> Look at the given digits in the answer and partial products first.',
+    tip2: '<b>Work backwards.</b> If the ones digit of the answer is 2, and the multiplier is 6, ask yourself: what \u00d7 6 ends in 2? (answer: 2 or 7)',
+    tip3: '<b>Check partial products.</b> Multiply the top number by each digit of the bottom number separately, then add them.',
+    tip4: '<b>Use carrying.</b> Remember that multiplication can produce carries! 7 \u00d7 6 = 42, so you write 2 and carry 4.',
+    stepsTitle: '📝 Step-by-Step Breakdown',
+    stepMultiply: "We're multiplying <b>{a}</b> \u00d7 <b>{b}</b>.",
+    stepPartial: 'Multiply {a} \u00d7 {d} (the <b>{place}</b> digit) = <b>{result}</b>{shift}.',
+    stepShift: ', then shift {n} place{s} left',
+    stepAdd: 'Add the partial products together to get <b>{product}</b>.',
+    stepSimple: '{a} \u00d7 {b} = <b>{product}</b>.',
+    stepFill: 'Fill in all the blue boxes with the correct missing digits!',
+    ones: 'ones', tens: 'tens', hundreds: 'hundreds',
+  },
+  zh: {
+    title: '🧮 数字拼图',
+    subtitle: '拖放数字，构建和解决数学谜题！',
+    tabPuzzle: '🧩 挑战模式',
+    tabBuild: '🏗️ 自由搭建',
+    tabHowto: '📖 玩法说明',
+    easy: '⭐ 简单',
+    medium: '⭐⭐ 中等',
+    hard: '⭐⭐⭐ 困难',
+    check: '✅ 检查',
+    hint: '💡 提示',
+    newPuzzle: '🎲 新题目',
+    numbers: '🔢 数字',
+    operators: '➕ 运算符',
+    specialPieces: '🧱 特殊组件',
+    loadExample: '📋 加载示例',
+    tapToClear: '点击格子可清除',
+    clearAll: '🗑️ 清空全部',
+    celebTitle: '太棒了！',
+    celebSub: '你完美地解决了这道题！',
+    celebNext: '🎲 下一题！',
+    noMoreHints: '没有更多提示了！你能行的！💪',
+    fillFirst: '请先填满所有蓝色方框！🔢',
+    howtoTitle: '📖 数字拼图玩法说明',
+    howto1: '看看卡片上的<b>乘法算式</b>。有些数字已经填好了，有些是空的（显示为蓝色虚线方框）。',
+    howto2: '从绿色数字块中<b>拖动一个数字</b>（0-9），<b>放到</b>蓝色方框里。想想哪个数字合适！',
+    howto3: '运用你的乘法知识！例如，如果你看到 <b>_4_ \u00d7 _6</b>，想一想：什么数乘以6，个位是答案中显示的数字？',
+    howto4: '<b>点击已填的方框</b>可以清除重填。如果卡住了，用 💡 <b>提示</b> 按钮——它会揭示一个数字！',
+    howto5: '填满所有方框后，按 ✅ <b>检查</b>。绿色 = 正确，红色 = 再试试。全部答对会有庆祝动画！🎉',
+    howto6: '在 <b>🏗️ 自由搭建</b> 模式中，你可以创建自己的题目！把数字、运算符（+、-、\u00d7）、方框和横线拖到网格上，给朋友设计练习题。',
+    tipsTitle: '🧠 解题技巧',
+    tip1: '<b>从已知数字开始。</b>先看看答案和部分积中已经给出的数字。',
+    tip2: '<b>逆向推理。</b>如果答案的个位是2，乘数是6，问自己：什么 \u00d7 6 的个位是2？（答案：2 或 7）',
+    tip3: '<b>检查部分积。</b>把上面的数分别乘以下面数字的每一位，然后把结果相加。',
+    tip4: '<b>注意进位。</b>记住乘法会产生进位！7 \u00d7 6 = 42，所以劙2进4。',
+    stepsTitle: '📝 分步解析',
+    stepMultiply: '我们要计算 <b>{a}</b> \u00d7 <b>{b}</b>。',
+    stepPartial: '用 {a} \u00d7 {d}（<b>{place}</b>）= <b>{result}</b>{shift}。',
+    stepShift: '，然后左移{n}位',
+    stepAdd: '把所有部分积加起来得到 <b>{product}</b>。',
+    stepSimple: '{a} \u00d7 {b} = <b>{product}</b>。',
+    stepFill: '在所有蓝色方框中填入正确的缺失数字！',
+    ones: '个位', tens: '十位', hundreds: '百位',
+  }
+};
+
+let lang = 'en';
+function t(key) { return (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml || el.getAttribute('data-i18n-html'));
+  });
+  document.title = lang === 'zh' ? '🧮 数字拼图' : '🧮 Numbers Puzzle';
+  document.documentElement.lang = lang;
+  if (currentProblem) renderSteps(currentProblem);
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    lang = btn.dataset.lang;
+    applyLang();
+  });
+});
+
+let currentProblem = null;
+let currentDifficulty = 'easy';
+let hintsUsed = 0;
+const MAX_HINTS = 3;
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentDifficulty = btn.dataset.diff;
+    newPuzzle();
+  });
+});
+
+function rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+function generateProblem(diff) {
+  let a, b;
+  if (diff === 'easy') { a = rand(11, 49); b = rand(2, 9); }
+  else if (diff === 'medium') { a = rand(12, 99); b = rand(12, 49); }
+  else { a = rand(101, 499); b = rand(12, 49); }
+
+  const product = a * b;
+  const bDigits = String(b).split('').reverse().map(Number);
+  const partials = bDigits.map((d, i) => ({ value: a * d, shift: i }));
+  const showPartials = bDigits.length > 1;
+
+  let maxW = String(product).length;
+  if (showPartials) partials.forEach(p => { maxW = Math.max(maxW, String(p.value).length + p.shift); });
+  maxW = Math.max(maxW, String(a).length, String(b).length);
+
+  const rows = [];
+  rows.push({ cells: digitCells(a, maxW), type: 'number' });
+  rows.push({ cells: multiplierCells(b, maxW), type: 'multiplier' });
+  rows.push({ type: 'line' });
+
+  if (showPartials) {
+    partials.forEach((p, i) => {
+      rows.push({ cells: partialCells(p.value, maxW, p.shift, i > 0 ? '+' : ''), type: 'partial' });
+    });
+    rows.push({ type: 'line' });
+  }
+  rows.push({ cells: digitCells(product, maxW), type: 'result' });
+
+  const allDigitCells = [];
+  rows.forEach(row => { if (row.cells) row.cells.forEach(c => { if (c.kind === 'digit') allDigitCells.push(c); }); });
+
+  let hideCount;
+  if (diff === 'easy') hideCount = Math.max(2, Math.floor(allDigitCells.length * 0.35));
+  else if (diff === 'medium') hideCount = Math.max(4, Math.floor(allDigitCells.length * 0.45));
+  else hideCount = Math.max(6, Math.floor(allDigitCells.length * 0.5));
+
+  const shuffled = [...allDigitCells].sort(() => Math.random() - 0.5);
+  for (let i = 0; i < hideCount && i < shuffled.length; i++) shuffled[i].hidden = true;
+
+  return { rows, a, b, product, partials, showPartials };
+}
+
+function digitCells(num, maxW) {
+  const s = String(num), cells = [];
+  for (let i = 0; i < maxW - s.length; i++) cells.push({ kind: 'space' });
+  for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
+  return cells;
+}
+function multiplierCells(num, maxW) {
+  const s = String(num), cells = [{ kind: 'operator', value: '\u00d7' }];
+  for (let i = 0; i < maxW - s.length - 1; i++) cells.push({ kind: 'space' });
+  for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
+  return cells;
+}
+function partialCells(num, maxW, shift, prefix) {
+  const s = String(num), cells = [];
+  if (prefix) {
+    cells.push({ kind: 'operator', value: prefix });
+    for (let i = 0; i < maxW - s.length - shift - 1; i++) cells.push({ kind: 'space' });
+  } else {
+    for (let i = 0; i < maxW - s.length - shift; i++) cells.push({ kind: 'space' });
+  }
+  for (const ch of s) cells.push({ kind: 'digit', value: parseInt(ch), hidden: false });
+  for (let i = 0; i < shift; i++) cells.push({ kind: 'space' });
+  return cells;
+}
+
+function renderPuzzle(problem) {
+  const grid = document.getElementById('puzzle-grid');
+  grid.innerHTML = '';
+  problem.rows.forEach(row => {
+    if (row.type === 'line') {
+      const lr = document.createElement('div');
+      lr.className = 'puzzle-row line-row';
+      lr.innerHTML = '<div class="puzzle-line"></div>';
+      grid.appendChild(lr);
+      return;
+    }
+    const rowEl = document.createElement('div');
+    rowEl.className = 'puzzle-row';
+    row.cells.forEach(cell => {
+      const el = document.createElement('div');
+      if (cell.kind === 'space') { el.className = 'p-cell spacer'; }
+      else if (cell.kind === 'operator') { el.className = 'p-cell operator'; el.textContent = cell.value; }
+      else if (cell.kind === 'digit') {
+        if (cell.hidden) {
+          el.className = 'p-cell blank';
+          el.dataset.expected = cell.value;
+          el.dataset.filled = 'false';
+          setupPuzzleDropTarget(el);
+        } else {
+          el.className = 'p-cell given';
+          el.textContent = cell.value;
+        }
+      }
+      rowEl.appendChild(el);
+    });
+    grid.appendChild(rowEl);
+  });
+}
+
+function renderPuzzlePalette() {
+  const c = document.getElementById('puzzle-tiles');
+  c.innerHTML = '';
+  for (let i = 0; i <= 9; i++) {
+    const tile = document.createElement('div');
+    tile.className = 'p-tile'; tile.textContent = i; tile.dataset.value = i;
+    setupDragSource(tile, String(i), 'digit');
+    c.appendChild(tile);
+  }
+}
+
+function renderSteps(problem) {
+  const panel = document.getElementById('steps-panel');
+  const steps = [];
+  steps.push(t('stepMultiply').replace('{a}', problem.a).replace('{b}', problem.b));
+
+  if (problem.showPartials) {
+    const bDigits = String(problem.b).split('').reverse().map(Number);
+    bDigits.forEach((d, i) => {
+      const partial = problem.a * d;
+      const placeNames = [t('ones'), t('tens'), t('hundreds')];
+      let shiftText = '';
+      if (i > 0) shiftText = t('stepShift').replace('{n}', i).replace('{s}', i > 1 ? 's' : '');
+      steps.push(t('stepPartial').replace('{a}', problem.a).replace('{d}', d).replace('{place}', placeNames[i] || i).replace('{result}', partial).replace('{shift}', shiftText));
+    });
+    steps.push(t('stepAdd').replace('{product}', problem.product));
+  } else {
+    steps.push(t('stepSimple').replace('{a}', problem.a).replace('{b}', problem.b).replace('{product}', problem.product));
+  }
+  steps.push(t('stepFill'));
+
+  let html = '<h3>' + t('stepsTitle') + '</h3>';
+  steps.forEach((s, i) => { html += '<div class="step-item"><div class="step-num">' + (i + 1) + '</div><div class="step-text">' + s + '</div></div>'; });
+  panel.innerHTML = html;
+}
+
+function newPuzzle() {
+  hintsUsed = 0;
+  currentProblem = generateProblem(currentDifficulty);
+  renderPuzzle(currentProblem);
+  renderSteps(currentProblem);
+}
+
+function giveHint() {
+  if (hintsUsed >= MAX_HINTS) { alert(t('noMoreHints')); return; }
+  const blanks = document.querySelectorAll('#puzzle-grid .p-cell.blank:not(.filled-in)');
+  if (blanks.length === 0) return;
+  const target = blanks[rand(0, blanks.length - 1)];
+  target.textContent = target.dataset.expected;
+  target.dataset.filled = 'true';
+  target.dataset.current = target.dataset.expected;
+  target.classList.add('filled-in', 'pop-anim');
+  setTimeout(() => target.classList.remove('pop-anim'), 300);
+  hintsUsed++;
+}
+
+function verifyPuzzle() {
+  const blanks = document.querySelectorAll('#puzzle-grid .p-cell.blank, #puzzle-grid .p-cell.filled-in');
+  let allFilled = true, allCorrect = true;
+  blanks.forEach(cell => {
+    cell.classList.remove('correct', 'wrong');
+    if (cell.dataset.filled !== 'true') allFilled = false;
+    else if (String(cell.dataset.current) !== String(cell.dataset.expected)) { cell.classList.add('wrong'); allCorrect = false; }
+    else cell.classList.add('correct');
+  });
+  if (!allFilled) { alert(t('fillFirst')); return; }
+  if (allCorrect) showCelebration();
+}
+
+let dragData = null, ghostEl = null;
+
+function setupDragSource(el, value, kind) {
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    dragData = { value, kind };
+    ghostEl = document.createElement('div');
+    ghostEl.className = 'drag-ghost';
+    ghostEl.textContent = value;
+    const colors = { digit: ['#43e97b','#38f9d7','#1a5c34'], operator: ['#fa709a','#fee140','#8b2252'] };
+    const c = colors[kind] || ['#a18cd1','#fbc2eb','#5b3a8c'];
+    ghostEl.style.background = 'linear-gradient(135deg,' + c[0] + ',' + c[1] + ')';
+    ghostEl.style.color = c[2];
+    document.body.appendChild(ghostEl);
+    moveGhost(e.clientX, e.clientY);
+    el.setPointerCapture(e.pointerId);
+    const onMove = (ev) => { ev.preventDefault(); moveGhost(ev.clientX, ev.clientY); highlightTarget(ev.clientX, ev.clientY); };
+    const onUp = (ev) => {
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      dropOnTarget(ev.clientX, ev.clientY);
+      if (ghostEl) { ghostEl.remove(); ghostEl = null; }
+      dragData = null;
+      clearHighlights();
+    };
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+  });
+}
+
+function moveGhost(x, y) { if (ghostEl) { ghostEl.style.left = (x - 26) + 'px'; ghostEl.style.top = (y - 26) + 'px'; } }
+function highlightTarget(x, y) { clearHighlights(); const tgt = getDropTarget(x, y); if (tgt) tgt.classList.add('drop-hover'); }
+function clearHighlights() { document.querySelectorAll('.drop-hover').forEach(el => el.classList.remove('drop-hover')); }
+
+function getDropTarget(x, y) {
+  if (ghostEl) ghostEl.style.display = 'none';
+  const el = document.elementFromPoint(x, y);
+  if (ghostEl) ghostEl.style.display = '';
+  if (el && (el.classList.contains('blank') || el.classList.contains('filled-in'))) return el;
+  if (el && el.classList.contains('grid-cell')) return el;
+  return null;
+}
+
+function dropOnTarget(x, y) {
+  const tgt = getDropTarget(x, y);
+  if (!tgt || !dragData) return;
+  if (tgt.classList.contains('blank') || tgt.classList.contains('filled-in')) {
+    tgt.textContent = dragData.value;
+    tgt.dataset.filled = 'true';
+    tgt.dataset.current = dragData.value;
+    tgt.classList.add('filled-in', 'pop-anim');
+    tgt.classList.remove('blank', 'correct', 'wrong');
+    setTimeout(() => tgt.classList.remove('pop-anim'), 300);
+    return;
+  }
+  if (tgt.classList.contains('grid-cell')) placeInCell(tgt, dragData.value, dragData.kind);
+}
+
+function setupPuzzleDropTarget(el) {
+  el.addEventListener('click', () => {
+    if (el.dataset.filled === 'true') {
+      el.textContent = ''; el.dataset.filled = 'false'; el.dataset.current = '';
+      el.classList.remove('filled-in', 'correct', 'wrong');
+      el.classList.add('blank');
+    }
+  });
+}
+
+function showCelebration() { document.getElementById('celebration').classList.add('show'); createConfetti(); }
+function closeCelebration() { document.getElementById('celebration').classList.remove('show'); newPuzzle(); }
+function createConfetti() {
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6eb4','#a855f7','#f97316'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.left = rand(5, 95) + 'vw';
+    c.style.background = colors[rand(0, colors.length - 1)];
+    c.style.animationDelay = (Math.random() * 2) + 's';
+    c.style.animationDuration = (2 + Math.random() * 2) + 's';
+    c.style.width = rand(6, 14) + 'px';
+    c.style.height = rand(6, 14) + 'px';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 5000);
+  }
+}
+
+const WS_COLS = 8, WS_ROWS = 8;
+function initWorkspace() {
+  const ws = document.getElementById('workspace');
+  ws.style.setProperty('--cols', WS_COLS); ws.style.setProperty('--rows', WS_ROWS); ws.innerHTML = '';
+  for (let r = 0; r < WS_ROWS; r++) for (let c = 0; c < WS_COLS; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell'; cell.dataset.row = r; cell.dataset.col = c;
+    cell.addEventListener('click', () => { if (cell.classList.contains('filled')) { cell.textContent = ''; cell.className = 'grid-cell'; } });
+    ws.appendChild(cell);
+  }
+}
+
+function initBuildPalette() {
+  const dp = document.getElementById('digit-palette'), op = document.getElementById('op-palette'), sp = document.getElementById('special-palette');
+  dp.innerHTML = ''; op.innerHTML = ''; sp.innerHTML = '';
+  for (let i = 0; i <= 9; i++) dp.appendChild(makePiece(String(i), 'digit'));
+  ['+','\u2212','\u00d7','\u00f7','='].forEach(v => op.appendChild(makePiece(v, 'operator')));
+  [{ l: '\u25a1', k: 'box' }, { l: '\u2022', k: 'dot' }, { l: '\u2501', k: 'line' }].forEach(s => {
+    const p = makePiece(s.l, s.k);
+    if (s.k === 'box') p.classList.add('box-piece');
+    sp.appendChild(p);
+  });
+}
+
+function makePiece(label, kind) {
+  const el = document.createElement('div');
+  el.className = 'piece ' + (kind === 'digit' ? 'digit' : kind === 'operator' ? 'operator' : 'special');
+  el.textContent = label;
+  setupDragSource(el, label, kind);
+  return el;
+}
+
+function placeInCell(cell, value, kind) {
+  cell.textContent = value; cell.className = 'grid-cell filled';
+  if (kind === 'digit') cell.classList.add('is-digit');
+  else if (kind === 'operator') cell.classList.add('is-operator');
+  else if (kind === 'box') { cell.classList.add('is-box'); cell.textContent = ''; }
+  else if (kind === 'dot') cell.classList.add('is-dot');
+  else if (kind === 'line') { cell.classList.add('is-line'); cell.textContent = ''; }
+  cell.classList.add('pop-anim');
+  setTimeout(() => cell.classList.remove('pop-anim'), 300);
+}
+
+function clearWorkspace() {
+  document.querySelectorAll('#workspace .grid-cell').forEach(c => { c.textContent = ''; c.className = 'grid-cell'; });
+}
+
+function loadExample() {
+  clearWorkspace();
+  const layout = [
+    [null,null,null,{v:'\u25a1',k:'box'},{v:'\u2022',k:'dot'},{v:'4',k:'digit'},{v:'\u25a1',k:'box'},null],
+    [null,null,null,{v:'\u00d7',k:'operator'},null,{v:'\u25a1',k:'box'},{v:'6',k:'digit'},null],
+    [null,null,null,{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},null],
+    [null,null,null,null,{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},null],
+    [null,null,{v:'+',k:'operator'},null,{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'5',k:'digit'},null],
+    [null,null,{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},{v:'\u2501',k:'line'},null],
+    [null,null,{v:'8',k:'digit'},{v:'\u2022',k:'dot'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},{v:'\u25a1',k:'box'},null],
+    [null,null,null,null,null,null,null,null],
+  ];
+  const cells = document.querySelectorAll('#workspace .grid-cell');
+  layout.forEach((row, r) => row.forEach((item, c) => { if (item) placeInCell(cells[r * WS_COLS + c], item.v, item.k); }));
+}
+
+function init() {
+  renderPuzzlePalette();
+  newPuzzle();
+  initWorkspace();
+  initBuildPalette();
+  applyLang();
+}
+init();
+</script>
+</body>
+</html>
